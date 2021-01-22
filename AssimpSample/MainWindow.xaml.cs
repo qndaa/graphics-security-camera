@@ -88,16 +88,17 @@ namespace AssimpSample
         {
             switch (e.Key)
             {
-                case Key.F10: this.Close(); break;
-                case Key.W: m_world.RotationX -= 5.0f; break;
-                case Key.S: m_world.RotationX += 5.0f; break;
-                case Key.A: m_world.RotationY -= 5.0f; break;
-                case Key.D: m_world.RotationY += 5.0f; break;
+                case Key.F6: this.Close(); break;
+                case Key.W: if (m_world.RotationX <= 50) m_world.RotationX += 7.0f; break;
+                case Key.S: if (m_world.RotationX >= 50 || m_world.RotationX >= 0) m_world.RotationX -= 7.0f; break;
+                case Key.A: if (m_world.RotationY >= -50) m_world.RotationY -= 7.0f; break;
+                case Key.D: if (m_world.RotationY <= 50) m_world.RotationY += 7.0f; break;
                 case Key.Add: m_world.SceneDistance -= 700.0f; break;
                 case Key.Subtract: m_world.SceneDistance += 700.0f; break;
+                
                 case Key.F2:
                     OpenFileDialog opfModel = new OpenFileDialog();
-                    bool result = (bool) opfModel.ShowDialog();
+                    bool result = (bool)opfModel.ShowDialog();
                     if (result)
                     {
 
@@ -110,11 +111,58 @@ namespace AssimpSample
                         }
                         catch (Exception exp)
                         {
-                            MessageBox.Show("Neuspesno kreirana instanca OpenGL sveta:\n" + exp.Message, "GRESKA", MessageBoxButton.OK );
+                            MessageBox.Show("Neuspesno kreirana instanca OpenGL sveta:\n" + exp.Message, "GRESKA", MessageBoxButton.OK);
                         }
                     }
                     break;
             }
         }
+
+        private void cameraSpeedSlider(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (m_world != null)
+            {
+                m_world.speedRotation = (int)cameraRotationSpeedSlider.Value;
+            }
+        }
+
+       
+
+       
+       
+
+        private void r_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (m_world != null)
+            {
+                m_world.r = (int)r.Value;
+            }
+        }
+
+        private void g_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (m_world != null)
+            {
+                m_world.g = (int)g.Value;
+            }
+        }
+
+        private void b_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (m_world != null)
+            {
+                m_world.b = (int)b.Value;
+            }
+        }
+
+        private void WidthOfCageSlider(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (m_world != null)
+            {
+                m_world.widthCage = (int)cageSlider.Value;
+            }
+        }
+
+     
     }
 }

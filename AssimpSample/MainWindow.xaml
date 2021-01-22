@@ -3,13 +3,29 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="SharpGL WPF Application" Height="350" Width="525" 
         xmlns:sharpGL="clr-namespace:SharpGL.WPF;assembly=SharpGL.WPF" KeyDown="Window_KeyDown">
+   
     <Grid>
-        
-        <!-- The OpenGL control provides a OpenGL drawing surface. -->
-        <sharpGL:OpenGLControl 
+
+
+            <!-- The OpenGL control provides a OpenGL drawing surface. -->
+                <sharpGL:OpenGLControl 
             Name="openGLControl" OpenGLDraw="openGLControl_OpenGLDraw" 
             OpenGLInitialized="openGLControl_OpenGLInitialized" Resized="openGLControl_Resized"
-            DrawFPS="True" RenderContextType="FBO" FrameRate="10"/>
+            DrawFPS="True" RenderContextType="FBO" FrameRate="10" Margin="0,27,0,0"/>
         
+        
+        <Label Content="Sirina zatvora:" HorizontalAlignment="Left" VerticalAlignment="Top" Width="88"/>
+        <Slider Name="cageSlider" HorizontalAlignment="Left" Margin="93,4,0,0" VerticalAlignment="Top" Width="70" ValueChanged="WidthOfCageSlider" Minimum="100" Maximum="330"/>
+        <Label Content="Brzina:" HorizontalAlignment="Left" Margin="168,0,0,0" VerticalAlignment="Top" Width="45"/>
+        <Slider Name="cameraRotationSpeedSlider" HorizontalAlignment="Left" Margin="218,4,0,0" VerticalAlignment="Top" Width="70"  Minimum="5" Maximum="30" ValueChanged="cameraSpeedSlider"/>
+   
+            <Label Content="Promena boje svetla:" HorizontalAlignment="Left" Margin="304,0,0,0" VerticalAlignment="Top" Width="120"/>
+        <Slider Name="r" HorizontalAlignment="Left" Margin="404,4,0,0" VerticalAlignment="Top" Width="70"  Minimum="0" Maximum="255" ValueChanged="r_ValueChanged"  />
+        <Slider Name="g" HorizontalAlignment="Left" Margin="504,4,0,0" VerticalAlignment="Top" Width="70" Minimum="0" Maximum="255" ValueChanged="g_ValueChanged" />
+        <Slider Name="b" HorizontalAlignment="Left" Margin="604,4,0,0" VerticalAlignment="Top" Width="70" Minimum="0" Maximum="255" ValueChanged="b_ValueChanged" />
+
+
     </Grid>
+
+
 </Window>
