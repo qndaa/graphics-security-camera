@@ -86,16 +86,37 @@ namespace AssimpSample
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
+            if (e.Key != Key.M && m_world.m_startAnimation == true)
+            {
+                return;
+            }
+
             switch (e.Key)
             {
                 case Key.F6: this.Close(); break;
-                case Key.W: if (m_world.RotationX <= 50) m_world.RotationX += 7.0f; break;
-                case Key.S: if (m_world.RotationX >= 50 || m_world.RotationX >= 0) m_world.RotationX -= 7.0f; break;
-                case Key.A: if (m_world.RotationY >= -50) m_world.RotationY -= 7.0f; break;
-                case Key.D: if (m_world.RotationY <= 50) m_world.RotationY += 7.0f; break;
+                case Key.Up: if (m_world.RotationX <= 50) m_world.RotationX += 7.0f; break;
+                case Key.Down: if (m_world.RotationX >= 50 || m_world.RotationX >= 0) m_world.RotationX -= 7.0f; break;
+                case Key.Left: if (m_world.RotationY >= -50) m_world.RotationY -= 7.0f; break;
+                case Key.Right: if (m_world.RotationY <= 50) m_world.RotationY += 7.0f; break;
                 case Key.Add: m_world.SceneDistance -= 700.0f; break;
                 case Key.Subtract: m_world.SceneDistance += 700.0f; break;
-                
+
+                case Key.M:
+                    m_world.stop = 1;
+                    if (m_world.m_startAnimation)
+                        m_world.m_startAnimation = false;
+                    else
+                    {
+                        m_world.m_startAnimation = true;
+                    }
+
+                    cageSlider.IsEnabled = !m_world.m_startAnimation;
+                    cameraRotationSpeedSlider.IsEnabled = !m_world.m_startAnimation;
+                    r.IsEnabled = !m_world.m_startAnimation;
+                    g.IsEnabled = !m_world.m_startAnimation;
+                    b.IsEnabled = !m_world.m_startAnimation;
+
+                    break;
                 case Key.F2:
                     OpenFileDialog opfModel = new OpenFileDialog();
                     bool result = (bool)opfModel.ShowDialog();
@@ -122,7 +143,7 @@ namespace AssimpSample
         {
             if (m_world != null)
             {
-                m_world.speedRotation = (int)cameraRotationSpeedSlider.Value;
+                m_world.speedRotationCamera = (int)cameraRotationSpeedSlider.Value;
             }
         }
 

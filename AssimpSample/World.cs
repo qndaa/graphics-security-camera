@@ -70,19 +70,30 @@ namespace AssimpSample
         /// </summary>
         private int m_height = 0;
 
-        private enum TextureObjects { Bricks = 0, Concentrate, Rust }
+        private enum TextureObjects { Bricks, Concentrate, Rust }
         private readonly int m_textureCount = Enum.GetNames(typeof(TextureObjects)).Length;
         private string[] m_textureFiles = { "C://Users//kundacina//Documents//godina-4//semestar-7//grafika//graphics-security-camera//AssimpSample//images//bricks.jpg", "C://Users//kundacina//Documents//godina-4//semestar-7//grafika//graphics-security-camera//AssimpSample//images//stone.jpg", "C://Users//kundacina//Documents//godina-4//semestar-7//grafika//graphics-security-camera//AssimpSample//images//rust.jpg" };
         private uint[] m_textures = null;
 
 
-        public float speedRotation = 0;
+        public float speedRotationCamera = 2.0f;
 
         public float r = 0;
         public float g = 0;
         public float b = 0;
 
-        public float widthCage = 160;
+        public float widthCage = 150f;
+
+        private DispatcherTimer animationTimer;
+        private float c_rotation = 0.0f;
+
+        private bool lightRed = true;
+
+        public Boolean m_startAnimation = false;
+        private float openDoor = -2.7f;
+        public float doorRotation = 0.0f;
+
+        public int stop = 1;
 
         #endregion Atributi
 
@@ -174,11 +185,16 @@ namespace AssimpSample
         /// </summary>
         public void Initialize(OpenGL gl)
         {
+
+            gl.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            gl.Color(1f, 0f, 0f);
+            
+            gl.ShadeModel(OpenGL.GL_FLAT);
             // Testiranje dubine
             gl.Enable(OpenGL.GL_DEPTH_TEST);
             // Nevidljive povrsine
             gl.Enable(OpenGL.GL_CULL_FACE_MODE);
-            // Color tracking mehanizam
+            
             gl.Enable(OpenGL.GL_COLOR_MATERIAL);
             gl.ColorMaterial(OpenGL.GL_FRONT, OpenGL.GL_AMBIENT_AND_DIFFUSE);
             gl.Enable(OpenGL.GL_NORMALIZE);
@@ -186,17 +202,14 @@ namespace AssimpSample
 
 
 
-            gl.Enable(OpenGL.GL_TEXTURE_2D);
-            // Stapanje teksture sa materijalom
-            gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_MODULATE);
-            // Ucitavanje slika i kreiranje tekstura
+            gl.Enable(OpenGL.GL_TEXTURE_2D);    
+            gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_ADD);
             gl.GenTextures(m_textureCount, m_textures);
 
             for (int i = 0; i < m_textureCount; i++)
             {
                 // Pridruzi teksturu odgovarajucem identifikatoru
                 gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[i]);
-                // Ucitaj sliku i podesi parametre teksture
                 Bitmap image = new Bitmap(m_textureFiles[i]);
                 // Rotiramo sliku zbog koordinatnog sistema OpenGL-a
                 image.RotateFlip(RotateFlipType.Rotate90FlipX);
@@ -220,7 +233,33 @@ namespace AssimpSample
             m_scene.LoadScene();
             m_scene.Initialize();
 
-       
+            animationTimer = new DispatcherTimer();
+            animationTimer.Interval = TimeSpan.FromMilliseconds(1);
+            animationTimer.Tick += new EventHandler(ChangeAnimation);
+
+
+        }
+
+        private void ChangeAnimation(object sender, EventArgs e)
+        {
+
+            if (c_rotation > 90.0f && c_rotation <= 130.0f)
+            {
+                c_rotation += speedRotationCamera;
+                stop = stop + 2;
+            }
+            else
+            {
+                c_rotation -= speedRotationCamera;
+                stop = stop + 2;
+            }
+            if (stop > 200)
+            {
+                openDoor = -1f;
+                c_rotation = 0.0f;
+
+
+            }
         }
 
         /// <summary>
@@ -229,15 +268,30 @@ namespace AssimpSample
         public void Draw(OpenGL gl)
         {
 
-            gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);          
+            gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
+
+            if (m_startAnimation)
+            {
+                animationTimer.Start();
+            }
+            else
+            {
+                animationTimer.Stop();
+
+                c_rotation = 0.0f;
+                openDoor = -2.5f;
+            }
+
 
             gl.PushMatrix();
 
-            gl.Translate(0.0f, -50.0f, m_sceneDistance);
+            gl.Translate(0.0f, 0.0f, m_sceneDistance);
 
             // Ugao rotacije
             gl.Rotate(m_xRotation, 1.0f, 0.0f, 0.0f);
             gl.Rotate(m_yRotation, 0.0f, 1.0f, 0.0f);
+
+            gl.LookAt(0, -50, -300, 0, 0, -1500, 0, 1, 0);
 
             gl.Enable(OpenGL.GL_TEXTURE_2D);
             drawGround(gl);
@@ -259,6 +313,11 @@ namespace AssimpSample
             gl.Enable(OpenGL.GL_CULL_FACE);
             gl.Disable(OpenGL.GL_TEXTURE_2D);
 
+            //gl.Enable(OpenGL.GL_TEXTURE_2D);
+            //gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[(int)TextureObjects.Rust]);
+            DrawDoor(gl);
+            //gl.Disable(OpenGL.GL_TEXTURE_2D);
+
             drawCamera(gl);
 
             drawLight(gl);
@@ -272,16 +331,29 @@ namespace AssimpSample
             gl.Flush();
         }
 
+        private void DrawDoor(OpenGL gl)
+        {
+           
+            Cube cube = new Cube();
+            gl.PushMatrix();
+            gl.Color(1f, 1f, 1f);
+            gl.Scale(1f, 80f, 40f);
+            gl.Translate(-widthCage+100, openDoor, 0f);
+            gl.Rotate(0.0f, doorRotation, 0.0f);
+            cube.Render(gl, RenderMode.Render);
+            gl.PopMatrix();
+        }
+
         private void SetupLighting(OpenGL gl)
         {
-            float[] ambijent = { 0.7f, 0.7f, 0.7f, 1.0f };
-            float[] difuz = { 0.5f, 0.5f, 0.5f, 1.0f };
+            float[] ambijent = { 0.03f, 0.03f, 0.03f, 1.0f };
+            float[] difuz = { 0.7f, 0.7f, 0.7f, 1.0f };
             // Pridruži komponente svetlosnom izvoru 0
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_AMBIENT,
             ambijent);
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_DIFFUSE, difuz);
             // Podesi parametre tackastog svetlosnog izvora
-            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPOT_CUTOFF, 180.0f); //tackasti izvor cutoff 180
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPOT_CUTOFF, 25.0f); 
             // Ukljuci svetlosni izvor
             gl.Enable(OpenGL.GL_LIGHT0);
             gl.Enable(OpenGL.GL_LIGHTING);
@@ -321,6 +393,7 @@ namespace AssimpSample
 
             gl.Translate(-200.0f, 400.0f, 100.0f);
             gl.Scale(5.0f, 5.0f, 5.0f);
+            gl.Rotate(0f, c_rotation, 0f);
             gl.Color(255f, 255f, 0f);
             spfera.Radius = 7f;
 
@@ -336,19 +409,27 @@ namespace AssimpSample
         public void drawGround(OpenGL gl)
         {
             gl.PushMatrix();
-            gl.Color(0.6f, 0.6f, 0.6f);
 
+    
+            gl.Color(0.6f, 0.6f, 0.6f);
+            gl.MatrixMode(OpenGL.GL_TEXTURE);
+            gl.MatrixMode(OpenGL.GL_MODELVIEW);
 
             gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[(int)TextureObjects.Concentrate]);
-            gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_MODULATE);
+            gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_ADD);
 
             gl.Begin(OpenGL.GL_QUADS);
             gl.Vertex(500.0f, -300.0f, -500.0f);
+            gl.TexCoord(0, 0);
             gl.Vertex(-500.0f, -300.0f, -500.0f);
+            gl.TexCoord(1, 0);
             gl.Vertex(-500.0f, -300.0f, 500.0f);
+            gl.TexCoord(1, 1);
             gl.Vertex(500.0f, -300.0f, 500.0f);
+            gl.TexCoord(0, 1);
             gl.End();
             gl.PopMatrix();
+
 
         }
 
@@ -406,7 +487,9 @@ namespace AssimpSample
             gl.Scale(widthCage, 300.0f, 300.0f);
             cage.TopRadius = 1;
             gl.Rotate(-90.0f, 0.0f, 0.0f);
-            
+
+            gl.PolygonMode(FaceMode.FrontAndBack, PolygonMode.Lines);
+
             gl.LineWidth(3.0f);
             cage.Render(gl, RenderMode.Render);
             gl.PopMatrix();
@@ -419,10 +502,14 @@ namespace AssimpSample
         public void drawCamera(OpenGL gl)
         {
             gl.PushMatrix();
+                gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_ADD);
                 gl.Color(1.0f, 0.0f, 0.0f);
                 gl.Translate(-400.0f, 100.0f, -350.0f);
-                gl.Rotate(0.0f, 60.0f, 0.0f);
-                gl.Scale(0.05f, 0.05f, 0.05f);
+                gl.Rotate(0f, c_rotation, 0f);
+            gl.Rotate(m_earthRotation, 0f, 1f, 0f);
+            gl.Rotate(0.0f, 60.0f, 0.0f);
+            
+            gl.Scale(0.05f, 0.05f, 0.05f);
                 m_scene.Draw();
             gl.PopMatrix();
         }
@@ -456,9 +543,10 @@ namespace AssimpSample
         {
             m_width = width;
             m_height = height;
-            gl.Viewport(0, 0, m_width, m_height);
+            
             gl.MatrixMode(OpenGL.GL_PROJECTION);      // selektuj Projection Matrix
             gl.LoadIdentity();
+            gl.Viewport(0, 0, m_width, m_height);
             gl.Perspective(45f, (double)width / height, 0.5f, 20000f);
             gl.MatrixMode(OpenGL.GL_MODELVIEW);
             gl.LoadIdentity();                // resetuj ModelView Matrix
